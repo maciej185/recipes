@@ -4,12 +4,9 @@ import os
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
-
-Base = declarative_base()
 
 
 class MissingDataConnectionStringComponenet(Exception):
@@ -19,11 +16,12 @@ class MissingDataConnectionStringComponenet(Exception):
 def get_db_connection_string() -> str:
     """Build a connection string using environment variables."""
     db_data = {
+        "db_engine": os.getenv("DB_ENGINE"),
         "db_username": os.getenv("DB_USERNAME"),
-        "db_password": os.environ.get("DB_PASSWORD"),
-        "db_port": os.environ.get("DB_PORT"),
-        "db_name": os.environ.get("DB_NAME"),
-        "db_host": os.environ.get("DB_HOST"),
+        "db_password": os.getenv("DB_PASSWORD"),
+        "db_port": os.getenv("DB_PORT"),
+        "db_name": os.getenv("DB_NAME"),
+        "db_host": os.getenv("DB_HOST"),
     }
 
     for db_data_componenet in db_data.keys():
@@ -32,7 +30,7 @@ def get_db_connection_string() -> str:
                 f"{db_data_componenet} is missing from the environment variables."
             )
 
-    return f"mysql+pymysql://{db_data['db_username']}:{db_data['db_password']}@{db_data['db_host']}:{db_data['db_port']}/{db_data['db_name']}"
+    return f"{db_data["db_engine"]}://{db_data['db_username']}:{db_data['db_password']}@{db_data['db_host']}:{db_data['db_port']}/{db_data['db_name']}"
 
 
 engine = create_engine(get_db_connection_string())
