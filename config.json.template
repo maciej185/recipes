@@ -1,0 +1,8 @@
+{
+    db_engine: "sqlite", 
+    db_host: "localhost",
+    db_port: 8080,
+    db_username: "username",
+    db_password: "password",
+    db_name: "db"
+}
