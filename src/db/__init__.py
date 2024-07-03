@@ -1,5 +1,5 @@
 """DB-related utils for the app."""
 
-from .models import Base
+from .db import Base, SessionLocal
 
-__all__ = ["Base"]
+__all__ = ["Base", "SessionLocal"]

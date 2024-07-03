@@ -7,19 +7,7 @@ from pydantic import BaseModel
 
 
 class ConfigView(BaseModel):
-    db_engine: str
-    db_host: str
-    db_port: int
-    db_username: str
-    db_password: str
-    db_name: str
-
-    def get_db_connection_string(self) -> str:
-        """Return a connection string to the db."""
-        db_address = f"{self.db_host}:{self.db_port}" if self.db_port else self.db_host
-        return (
-            f"{self.db_engine}://{self.db_username}:{self.db_password}@{db_address}/{self.db_name}"
-        )
+    app_name: str
 
 
 class ConfigManager:
