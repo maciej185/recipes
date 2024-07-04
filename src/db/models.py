@@ -1,5 +1,7 @@
 """ORM models for the app."""
 
+from datetime import datetime
+
 from sqlalchemy import Column, Date, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -16,5 +18,5 @@ class DB_User(Base):
     first_name = Column(String(100))
     last_name = Column(String(100))
     description = Column(Text)
-    create_date = Column(Date)
+    create_date = Column(Date, default=datetime.now())
     date_of_birth = Column(Date)

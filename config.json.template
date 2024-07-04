@@ -1,3 +1,5 @@
 {
-    "app_name": "AppName"
+    "app_name": "AppName",
+    "token_signing_key": "Secret key for signing JWTs.",
+    "token_signing_algorithm": "Name of the algorithm for signing the token."
 }
