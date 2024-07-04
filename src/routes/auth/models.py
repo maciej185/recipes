@@ -4,6 +4,8 @@ from datetime import date
 
 from pydantic import BaseModel
 
+from src.roles import Roles
+
 
 class UserBase(BaseModel):
     """Base for User models."""
@@ -29,6 +31,7 @@ class UserInResponse(UserBase):
     """Model for returning User information."""
 
     user_id: int
+    role: Roles
 
 
 class UserUpdate(UserBase):

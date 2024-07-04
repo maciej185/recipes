@@ -38,3 +38,19 @@ def update_user_in_db(db: Session, user_id: int, user_data: UserUpdate) -> Optio
         db_user = db_user_query.first()
         db.refresh(db_user)
         return db_user
+
+
+def delete_user_from_db(db: Session, user_id: int) -> bool:
+    """Delete user with the given ID from DB.
+
+    Returns:
+        Boolean information about whether or not the user was deleted. The
+        only situtation when it might not have been deleted is when it
+        didn't exist in the first place.
+    """
+    user = db.query(DB_User).filter(DB_User.user_id == user_id).first()
+    if not user:
+        return False
+    db.delete(user)
+    db.commit()
+    return True

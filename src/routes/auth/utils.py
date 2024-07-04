@@ -76,3 +76,17 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+class RoleChecker:
+    """DEpendency for checking the permissions of the currently logged in user."""
+
+    def __init__(self, allowed_roles):
+        self.allowed_roles = allowed_roles
+
+    def __call__(self, user: Annotated[DB_User, Depends(get_current_user)]):
+        if user.role in self.allowed_roles:
+            return True
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="You don't have enough permissions"
+        )

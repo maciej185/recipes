@@ -5,6 +5,8 @@ from datetime import datetime
 from sqlalchemy import Column, Date, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 
+from src.roles import Roles
+
 Base = declarative_base()
 
 
@@ -20,3 +22,4 @@ class DB_User(Base):
     description = Column(Text)
     create_date = Column(Date, default=datetime.now())
     date_of_birth = Column(Date)
+    role = Column(Integer, default=Roles.USER.value)

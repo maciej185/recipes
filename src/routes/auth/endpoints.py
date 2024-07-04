@@ -1,6 +1,5 @@
 """Endpoints for the auth package."""
 
-from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
@@ -9,11 +8,12 @@ from sqlalchemy.orm import Session
 
 from src.db.models import DB_User
 from src.dependencies import get_db
+from src.roles import Roles
 from src.tags import Tags
 
-from .crud import create_user, update_user_in_db
+from .crud import create_user, delete_user_from_db, update_user_in_db
 from .models import Token, UserAdd, UserInResponse, UserUpdate
-from .utils import authenticate_user, create_access_token, get_current_user
+from .utils import RoleChecker, authenticate_user, create_access_token, get_current_user
 
 router = APIRouter(
     prefix="/auth",
@@ -40,7 +40,10 @@ async def login(
 
 
 @router.get("/me", response_model=UserInResponse)
-async def read_users_me(current_user: Annotated[DB_User, Depends(get_current_user)]) -> DB_User:
+async def read_users_me(
+    current_user: Annotated[DB_User, Depends(get_current_user)],
+    _: Annotated[bool, Depends(RoleChecker(allowed_roles=[Roles.USER.value]))],
+) -> DB_User:
     """Return an object representing the currently logged in User."""
     return current_user
 
@@ -66,3 +69,11 @@ def update_user(
             status_code=404, detail="User with the given ID does not exists in the database."
         )
     return updated_user
+
+
+@router.delete("/delete/{user_id}")
+def delete_user(
+    user_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
+) -> dict[str, bool]:
+    """Delete user with the given ID."""
+    return {"success": delete_user_from_db(db=db, user_id=user_id)}
