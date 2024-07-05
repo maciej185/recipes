@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from src.db.models import DB_User
@@ -56,3 +57,18 @@ def delete_user_from_db(db: Session, user_id: int) -> bool:
     db.delete(user)
     db.commit()
     return True
+
+
+def get_all_users_from_db(db: Session) -> list[DB_User]:
+    """List all users in the DB."""
+    return db.query(DB_User).all()
+
+
+def get_user_from_db(db: Session, user_id: int) -> DB_User:
+    """Get a specific user from the DB."""
+    user = db.query(DB_User).filter(DB_User.user_id == user_id).first()
+    if user is None:
+        raise HTTPException(
+            status_code=404, detail="User with the given ID does not exist in the DB."
+        )
+    return user

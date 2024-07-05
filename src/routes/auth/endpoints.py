@@ -69,11 +69,3 @@ def update_user(
             status_code=404, detail="User with the given ID does not exists in the database."
         )
     return updated_user
-
-
-@router.delete("/delete/{user_id}")
-def delete_user(
-    user_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
-) -> dict[str, bool]:
-    """Delete user with the given ID."""
-    return {"success": delete_user_from_db(db=db, user_id=user_id)}

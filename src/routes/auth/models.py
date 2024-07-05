@@ -34,6 +34,13 @@ class UserInResponse(UserBase):
     role: Roles
 
 
+class UserInResponseAdmin(UserInResponse):
+    """Model for returning all User information for an admin."""
+
+    hashed_password: str
+    create_date: date
+
+
 class UserUpdate(UserBase):
     """Model for updating the User info."""
 
