@@ -5,12 +5,13 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from src.db.models import DB_User
+from src.roles import Roles
 
 from .models import UserAdd, UserUpdate
 from .utils import get_password_hash
 
 
-def create_user(db: Session, user_data: UserAdd) -> DB_User:
+def create_user(db: Session, user_data: UserAdd, role: int = Roles.USER.value) -> DB_User:
     """Save User and return it's DB representation."""
     hashed_password = get_password_hash(user_data.plain_text_password)
     db_user = DB_User(
@@ -21,6 +22,7 @@ def create_user(db: Session, user_data: UserAdd) -> DB_User:
         email=user_data.email,
         date_of_birth=user_data.date_of_birth,
         description=user_data.description,
+        role=role,
     )
     db.add(db_user)
     db.commit()
