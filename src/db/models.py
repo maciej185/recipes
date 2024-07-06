@@ -39,9 +39,11 @@ class DB_Recipe(Base):
     description = Column(Text, nullable=False)
 
     author = relationship("DB_User", back_populates="recipes")
-    nutrition_info = relationship("DB_NutritionInfo", back_populates="recipe")
-    instructions = relationship("DB_Instruction", back_populates="recipe")
-    ingredientes = relationship("DB_Ingredient", back_populates="recipe")
+    nutrition_info = relationship(
+        "DB_NutritionInfo", back_populates="recipe", cascade="all, delete"
+    )
+    instructions = relationship("DB_Instruction", back_populates="recipe", cascade="all, delete")
+    ingredientes = relationship("DB_Ingredient", back_populates="recipe", cascade="all, delete")
 
 
 class DB_NutritionInfo(Base):

@@ -14,5 +14,5 @@ app = FastAPI(
 
 app.include_router(auth.router)
 app.include_router(auth.admin_router)
-
+app.include_router(recipes.router)
 app.include_router(recipes.admin_router)

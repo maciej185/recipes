@@ -6,3 +6,4 @@ from enum import Enum
 class Tags(Enum):
     auth = "Authentication"
     admin = "Admin"
+    recipes = "Recipes"

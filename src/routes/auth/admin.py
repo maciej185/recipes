@@ -17,30 +17,37 @@ from .utils import RoleChecker
 admin_router = APIRouter(prefix="/auth", tags=[Tags.admin.value])
 
 
-@admin_router.delete("/delete/{user_id}")
+@admin_router.delete(
+    "/delete/{user_id}", dependencies=[Depends(RoleChecker(allowed_roles=[Roles.ADMIN.value]))]
+)
 def delete_user(
     user_id: Annotated[int, Path()],
     db: Annotated[Session, Depends(get_db)],
-    _: Annotated[bool, Depends(RoleChecker(allowed_roles=[Roles.ADMIN.value]))],
 ) -> dict[str, bool]:
     """Delete user with the given ID."""
     return {"success": delete_user_from_db(db=db, user_id=user_id)}
 
 
-@admin_router.get("/get/user/{user_id}", response_model=UserInResponseAdmin)
+@admin_router.get(
+    "/users/{user_id}",
+    response_model=UserInResponseAdmin,
+    dependencies=[Depends(RoleChecker(allowed_roles=[Roles.ADMIN.value]))],
+)
 def get_user(
     user_id: Annotated[int, Path()],
     db: Annotated[Session, Depends(get_db)],
-    _: Annotated[bool, Depends(RoleChecker(allowed_roles=[Roles.ADMIN.value]))],
 ) -> DB_User:
     """Get user with the given ID."""
     return get_user_from_db(db=db, user_id=user_id)
 
 
-@admin_router.get("/get/users", response_model=list[UserInResponseAdmin])
+@admin_router.get(
+    "/users",
+    response_model=list[UserInResponseAdmin],
+    dependencies=[Depends(RoleChecker(allowed_roles=[Roles.ADMIN.value]))],
+)
 def get_users(
     db: Annotated[Session, Depends(get_db)],
-    _: Annotated[bool, Depends(RoleChecker(allowed_roles=[Roles.ADMIN.value]))],
 ) -> list[DB_User]:
     """Get a list of all users from the DB."""
     return get_all_users_from_db(db=db)
