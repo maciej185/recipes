@@ -25,10 +25,10 @@ class DB_User(Base):
     date_of_birth = Column(Date)
     role = Column(Integer, default=Roles.USER.value)
 
-    recipes = relationship("Recipe", back_populates="author")
+    recipes = relationship("DB_Recipe", back_populates="author")
 
 
-class Recipe(Base):
+class DB_Recipe(Base):
     __tablename__ = "recipes"
 
     recipe_id = Column(Integer, primary_key=True)
@@ -38,13 +38,13 @@ class Recipe(Base):
     prep_time = Column(Integer, nullable=False)
     description = Column(Text, nullable=False)
 
-    author = relationship("User", back_populates="recipes")
-    nutrition_info = relationship("NutritionInfo", back_populates="recipe")
-    instructions = relationship("Instruction", back_populates="recipe")
-    ingredientes = relationship("Ingredient", back_populates="recipe")
+    author = relationship("DB_User", back_populates="recipes")
+    nutrition_info = relationship("DB_NutritionInfo", back_populates="recipe")
+    instructions = relationship("DB_Instruction", back_populates="recipe")
+    ingredientes = relationship("DB_Ingredient", back_populates="recipe")
 
 
-class NutritionInfo(Base):
+class DB_NutritionInfo(Base):
     __tablename__ = "nutrition_infos"
 
     nutritio_info_id = Column(Integer, primary_key=True)
@@ -56,10 +56,10 @@ class NutritionInfo(Base):
     fiber = Column(Integer, nullable=False)
     fat = Column(Integer, nullable=False)
 
-    recipe = relationship("Recipes", back_populates="nutrition_info")
+    recipe = relationship("DB_Recipe", back_populates="nutrition_info")
 
 
-class Instruction(Base):
+class DB_Instruction(Base):
     __tablename__ = "instructions"
 
     instruction_id = Column(Integer, primary_key=True)
@@ -67,20 +67,20 @@ class Instruction(Base):
     text = Column(Text, nullable=False)
     order = Column(Integer, nullable=False)
 
-    recipe = relationship("Recipe", back_populates="instructions")
+    recipe = relationship("DB_Recipe", back_populates="instructions")
 
 
-class Unit(Base):
+class DB_Unit(Base):
     __tablename__ = "units"
 
     unit_id = Column(Integer, primary_key=True)
     unit = Column(String(100), nullable=False)
     liquid = Column(Boolean, nullable=False)
 
-    ingredientes = relationship("Ingredient", back_populates="unit")
+    ingredientes = relationship("DB_Ingredient", back_populates="unit")
 
 
-class Ingredient(Base):
+class DB_Ingredient(Base):
     __tablename__ = "ingredientes"
 
     ingredient_id = Column(Integer, primary_key=True)
@@ -89,5 +89,5 @@ class Ingredient(Base):
     amount = Column(Float(2), nullable=False)
     unit_id = Column(Integer, ForeignKey("units.unit_id"))
 
-    recipe = relationship("Recipe", back_populates="ingredientes")
-    unit = relationship("Unit", back_populates="ingredientes")
+    recipe = relationship("DB_Recipe", back_populates="ingredientes")
+    unit = relationship("DB_Unit", back_populates="ingredientes")
