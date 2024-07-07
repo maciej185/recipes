@@ -144,3 +144,13 @@ def get_nutrition_info_from_db(db: Session, nutrition_info_id: int) -> DB_Nutrit
 def list_nutrition_infos_from_db(db: Session) -> list[DB_NutritionInfo]:
     """List all available nutrition infos from the DB."""
     return db.query(DB_NutritionInfo).all()
+
+
+def list_instructions_from_db(db: Session) -> list[DB_Instruction]:
+    """List all available instructions from teh DB."""
+    return db.query(DB_Instruction).all()
+
+
+def list_ingredients_from_db(db: Session) -> list[DB_Ingredient]:
+    """List all available ingredients from the DB."""
+    return db.query(DB_Ingredient).all()

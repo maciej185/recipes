@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, Path
 from sqlalchemy.orm import Session
 
-from src.db.models import DB_NutritionInfo, DB_Unit
+from src.db.models import DB_Ingredient, DB_Instruction, DB_NutritionInfo, DB_Unit
 from src.dependencies import get_db
 from src.roles import Roles
 from src.routes.auth.utils import RoleChecker
@@ -16,6 +16,8 @@ from .crud import (
     delete_measurment_unit,
     delete_recipe_from_db,
     get_nutrition_info_from_db,
+    list_ingredients_from_db,
+    list_instructions_from_db,
     list_nutrition_infos_from_db,
 )
 from .models import NutritionInfoAdmin, Unit, UnitAdd
@@ -61,3 +63,17 @@ def get_nutrition_info(
 def list_nutrition_info(db: Annotated[Session, Depends(get_db)]) -> list[DB_NutritionInfo]:
     """List all available nutrition infos."""
     return list_nutrition_infos_from_db(db=db)
+
+
+@admin_router.get("/instructions/list", response_model=list[DB_Instruction])
+def list_instructions(db: Annotated[Session, Depends(get_db)]) -> list[DB_Instruction]:
+    """List all available instructions"""
+    return list_instructions_from_db(db=db)
+
+
+admin_router.get("/ingredients/list", response_model=list[DB_Ingredient])
+
+
+def list_ingredients(db: Annotated[Session, Depends(get_db)]) -> list[DB_Ingredient]:
+    """List all available ingredients"""
+    return list_ingredients_from_db(db=db)
