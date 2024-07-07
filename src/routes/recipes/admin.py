@@ -5,14 +5,20 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, Path
 from sqlalchemy.orm import Session
 
-from src.db.models import DB_Unit
+from src.db.models import DB_NutritionInfo, DB_Unit
 from src.dependencies import get_db
 from src.roles import Roles
 from src.routes.auth.utils import RoleChecker
 from src.tags import Tags
 
-from .crud import add_measurment_unit, delete_measurment_unit, delete_recipe_from_db
-from .models import Unit, UnitAdd
+from .crud import (
+    add_measurment_unit,
+    delete_measurment_unit,
+    delete_recipe_from_db,
+    get_nutrition_info_from_db,
+    list_nutrition_infos_from_db,
+)
+from .models import NutritionInfoAdmin, Unit, UnitAdd
 
 admin_router = APIRouter(
     prefix="/recipes",
@@ -41,3 +47,17 @@ def delete_recipe(
 ) -> None:
     """Delete a given recipe."""
     delete_recipe_from_db(db=db, recipe_id=recipe_id)
+
+
+@admin_router.get("/nutrition_info/{nutrition_info_id}", response_model=NutritionInfoAdmin)
+def get_nutrition_info(
+    nutrition_info_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
+) -> DB_NutritionInfo:
+    """Get a given nutrition info."""
+    return get_nutrition_info_from_db(db=db, nutrition_info_id=nutrition_info_id)
+
+
+@admin_router.get("/nutrtion_info/list", response_model=list[NutritionInfoAdmin])
+def list_nutrition_info(db: Annotated[Session, Depends(get_db)]) -> list[DB_NutritionInfo]:
+    """List all available nutrition infos."""
+    return list_nutrition_infos_from_db(db=db)

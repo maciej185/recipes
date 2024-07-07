@@ -15,8 +15,6 @@ class InstructionBase(BaseModel):
 class InstructionAdd(InstructionBase):
     """Model for adding a new instruction."""
 
-    recipe_id: int
-
 
 class Instruction(InstructionBase):
     """Model with all instruction information."""
@@ -51,7 +49,6 @@ class IngredientBase(BaseModel):
 class IngredientAdd(IngredientBase):
     """Model for adding a new ingredient."""
 
-    recipe_id: int
     unit_id: int
 
 
@@ -67,7 +64,6 @@ class Ingredient(IngredientBase):
 class NutritionInfoBase(BaseModel):
     """Base for a nutrition info representation."""
 
-    recipe_id: int
     calories: int
     protein: int
     carbohydrates: int
@@ -83,12 +79,32 @@ class NutritionInfoAdd(NutritionInfoBase):
 class NutritionInfo(NutritionInfoBase):
     """Model with all the nutrition info information."""
 
+    nutritio_info_id: int
+    calories: int = 0
+    protein: int = 0
+    carbohydrates: int = 0
+    sugar: int = 0
+    fiber: int = 0
+    fat: int = 0
+
+
+class NutritionInfoAdmin(NutritionInfoBase):
+    """Model with all the nutrition info information for admins.
+
+    The difference between this model and the one for standard
+    users is that this contains the ID of the recipe and the ID
+    of the DB_NutritionInfo object itself which might get useful
+    when listing all the nutrition infos separately from the recipes.
+    """
+
+    recipe_id: int
+    nutritio_info_id: int
+
 
 class RecipeBase(BaseModel):
     """Base for a recipe representation."""
 
-    name: str
-    create_date: str
+    # name: str
     servings: int
     prep_time: int
     description: str
@@ -100,15 +116,16 @@ class RecipeAdd(RecipeBase):
     author_id: int
     ingredients: list[IngredientAdd]
     instructions: list[InstructionAdd]
+    nutrition_info: NutritionInfoAdd
 
 
 class Recipe(RecipeBase):
     """Model with all the recipe information."""
 
     author: UserInResponse
-    ingredientes: list[Ingredient]
-    instructions: list[Instruction]
-    nutrition_info: NutritionInfo
+    ingredientes: list[Ingredient] = []
+    instructions: list[Instruction] = []
+    nutrition_info: list[NutritionInfo]
 
     class Config:
         from_attributes = True
