@@ -5,6 +5,7 @@ from datetime import date
 from pydantic import BaseModel
 
 from src.roles import Roles
+from src.routes.tags.models import Tag
 
 
 class UserBase(BaseModel):
@@ -32,6 +33,7 @@ class UserInResponse(UserBase):
 
     user_id: int
     role: Roles
+    tags: list[Tag]
 
 
 class UserInResponseAdmin(UserInResponse):

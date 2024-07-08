@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel
 
-from src.routes.auth.models import UserInResponse
 from src.routes.tags.models import Tag
 
 
@@ -125,7 +124,7 @@ class Recipe(RecipeBase):
     """Model with all the recipe information."""
 
     recipe_id: int
-    author: UserInResponse
+    author_id: int
     ingredientes: list[Ingredient] = []
     instructions: list[Instruction] = []
     nutrition_info: list[NutritionInfo]
