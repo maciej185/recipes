@@ -2,13 +2,20 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, Date, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, Date, Float, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 from src.roles import Roles
 
 Base = declarative_base()
+
+recipe_tag_association_table = Table(
+    "recipe_tag_association_table",
+    Base.metadata,
+    Column("recipe_id", ForeignKey("recipes.recipe_id")),
+    Column("tag_id", ForeignKey("tags.tag_id")),
+)
 
 
 class DB_User(Base):
@@ -44,6 +51,7 @@ class DB_Recipe(Base):
     )
     instructions = relationship("DB_Instruction", back_populates="recipe", cascade="all, delete")
     ingredientes = relationship("DB_Ingredient", back_populates="recipe", cascade="all, delete")
+    tags = relationship("DB_Tag", secondary=recipe_tag_association_table, back_populates="recipes")
 
 
 class DB_NutritionInfo(Base):
@@ -93,3 +101,14 @@ class DB_Ingredient(Base):
 
     recipe = relationship("DB_Recipe", back_populates="ingredientes")
     unit = relationship("DB_Unit", back_populates="ingredientes")
+
+
+class DB_Tag(Base):
+    __tablename__ = "tags"
+
+    tag_id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True)
+
+    recipes = relationship(
+        "DB_Recipe", secondary=recipe_tag_association_table, back_populates="tags"
+    )
