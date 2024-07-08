@@ -3,6 +3,7 @@
 from pydantic import BaseModel
 
 from src.routes.auth.models import UserInResponse
+from src.routes.tags.models import Tag
 
 
 class InstructionBase(BaseModel):
@@ -117,6 +118,7 @@ class RecipeAdd(RecipeBase):
     ingredients: list[IngredientAdd]
     instructions: list[InstructionAdd]
     nutrition_info: NutritionInfoAdd
+    tags: list[int]
 
 
 class Recipe(RecipeBase):
@@ -127,6 +129,7 @@ class Recipe(RecipeBase):
     ingredientes: list[Ingredient] = []
     instructions: list[Instruction] = []
     nutrition_info: list[NutritionInfo]
+    tags: list[Tag]
 
     class Config:
         from_attributes = True

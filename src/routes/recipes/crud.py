@@ -3,7 +3,14 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from src.db.models import DB_Ingredient, DB_Instruction, DB_NutritionInfo, DB_Recipe, DB_Unit
+from src.db.models import (
+    DB_Ingredient,
+    DB_Instruction,
+    DB_NutritionInfo,
+    DB_Recipe,
+    DB_Tag,
+    DB_Unit,
+)
 
 from .models import RecipeAdd, UnitAdd
 from .types import IngredientAddDict, InstructionAddDict, NutritionInfoAddDict
@@ -76,6 +83,7 @@ def add_recipe_to_db(db: Session, recipe_data: RecipeAdd) -> DB_Recipe:
     instructions = recipe_dict.pop("instructions")
     ingredients = recipe_dict.pop("ingredients")
     nutrition_info = recipe_dict.pop("nutrition_info")
+    tags = recipe_dict.pop("tags")
     db_recipe = DB_Recipe(**recipe_dict)
     db.add(db_recipe)
     db.commit()
@@ -86,6 +94,7 @@ def add_recipe_to_db(db: Session, recipe_data: RecipeAdd) -> DB_Recipe:
     add_nutrition_info_to_db(
         db=db, nutrition_info_data=nutrition_info, recipe_id=db_recipe.recipe_id
     )
+    db_recipe = add_tags_to_a_recipe(db=db, tag_ids=tags, db_recipe=db_recipe)
 
     return db_recipe
 
@@ -120,6 +129,17 @@ def add_nutrition_info_to_db(
     db.add(db_nutrition_info)
     db.commit()
     db.refresh(db_nutrition_info)
+
+
+def add_tags_to_a_recipe(db: Session, tag_ids: list[int], db_recipe: DB_Recipe) -> DB_Recipe:
+    """Add tags to a given recipe and return the refreshed recipe object with tags included."""
+    tags = [db.query(DB_Tag).filter(DB_Tag.tag_id == tag_id).first() for tag_id in tag_ids]
+    for tag in tags:
+        if tag:
+            db_recipe.tags.append(tag)
+    db.commit()
+    db.refresh(db_recipe)
+    return db_recipe
 
 
 def get_nutrition_info_from_db(db: Session, nutrition_info_id: int) -> DB_NutritionInfo:
