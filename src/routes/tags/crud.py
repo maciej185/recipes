@@ -3,7 +3,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from src.db.models import DB_Tag
+from src.db.models import DB_Tag, DB_User
 
 from .models import TagAdd
 
@@ -35,3 +35,20 @@ def delete_tag_from_db(db: Session, tag_id: int) -> None:
 def list_tags_from_db(db: Session) -> list[DB_Tag]:
     """List all available tags in the DB."""
     return db.query(DB_Tag).all()
+
+
+def add_tag_to_a_user(db: Session, tag_id: int, db_user: DB_User) -> DB_User:
+    """Assign a  tag to a User and return the refreshed user object.
+
+    Raises:
+        HTTPException: Raised when a Tag with the given ID does not exist.
+    """
+    tag = db.query(DB_Tag).filter(DB_Tag.tag_id == tag_id).first()
+    if tag is None:
+        raise HTTPException(
+            status_code=404, detail="Tag with the given ID was nout found in the DB."
+        )
+    db_user.tags.append(tag)
+    db.commit()
+    db.refresh(db_user)
+    return DB_User
