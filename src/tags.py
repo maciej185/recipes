@@ -7,3 +7,4 @@ class Tags(Enum):
     auth = "Authentication"
     admin = "Admin"
     recipes = "Recipes"
+    tags = "Tags"
