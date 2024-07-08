@@ -20,7 +20,7 @@ from .crud import (
     list_instructions_from_db,
     list_nutrition_infos_from_db,
 )
-from .models import NutritionInfoAdmin, Unit, UnitAdd
+from .models import Ingredient, Instruction, NutritionInfoAdmin, Unit, UnitAdd
 
 admin_router = APIRouter(
     prefix="/recipes",
@@ -43,7 +43,7 @@ def delete_unit(unit_id: Annotated[int, Path()], db: Annotated[Session, Depends(
     delete_measurment_unit(db=db, unit_id=unit_id)
 
 
-@admin_router.delete("/recipe/delete/{recipe_id}", status_code=204)
+@admin_router.delete("/recipe/delete_admin/{recipe_id}", status_code=204)
 def delete_recipe(
     recipe_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
 ) -> None:
@@ -65,15 +65,13 @@ def list_nutrition_info(db: Annotated[Session, Depends(get_db)]) -> list[DB_Nutr
     return list_nutrition_infos_from_db(db=db)
 
 
-@admin_router.get("/instructions/list", response_model=list[DB_Instruction])
+@admin_router.get("/instructions/list", response_model=list[Instruction])
 def list_instructions(db: Annotated[Session, Depends(get_db)]) -> list[DB_Instruction]:
     """List all available instructions"""
     return list_instructions_from_db(db=db)
 
 
-admin_router.get("/ingredients/list", response_model=list[DB_Ingredient])
-
-
+@admin_router.get("/ingredients/list", response_model=list[Ingredient])
 def list_ingredients(db: Annotated[Session, Depends(get_db)]) -> list[DB_Ingredient]:
     """List all available ingredients"""
     return list_ingredients_from_db(db=db)

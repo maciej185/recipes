@@ -122,6 +122,7 @@ class RecipeAdd(RecipeBase):
 class Recipe(RecipeBase):
     """Model with all the recipe information."""
 
+    recipe_id: int
     author: UserInResponse
     ingredientes: list[Ingredient] = []
     instructions: list[Instruction] = []
