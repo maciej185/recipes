@@ -1,10 +1,17 @@
 services:
   mysql:
     image: mysql:latest
+    build: .
     volumes:
       - my_sql_volume:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: secret 
+    develop:
+      watch:
+        - path: ./src
+          action: rebuild
+
+    
   backend:
     image: recipe_app_backend
     environment:
