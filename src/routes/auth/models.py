@@ -5,6 +5,7 @@ from datetime import date
 from pydantic import BaseModel
 
 from src.roles import Roles
+from src.routes.recipes.models import Recipe
 from src.routes.tags.models import Tag
 
 
@@ -34,6 +35,7 @@ class UserInResponse(UserBase):
     user_id: int
     role: Roles
     tags: list[Tag]
+    saved_recipes: list[Recipe]
 
 
 class UserInResponseAdmin(UserInResponse):

@@ -24,6 +24,13 @@ user_tag_association_table = Table(
     Column("tag_id", ForeignKey("tags.tag_id")),
 )
 
+user_recipe_association_table = Table(
+    "user_recipe_association_table",
+    Base.metadata,
+    Column("user_id", ForeignKey("users.user_id")),
+    Column("recipe_id", ForeignKey("recipes.recipe_id")),
+)
+
 
 class DB_User(Base):
     __tablename__ = "users"
@@ -41,6 +48,9 @@ class DB_User(Base):
 
     recipes = relationship("DB_Recipe", back_populates="author")
     tags = relationship("DB_Tag", secondary=user_tag_association_table, back_populates="users")
+    saved_recipes = relationship(
+        "DB_Recipe", secondary=user_recipe_association_table, back_populates="saved_by"
+    )
 
 
 class DB_Recipe(Base):
@@ -60,6 +70,9 @@ class DB_Recipe(Base):
     instructions = relationship("DB_Instruction", back_populates="recipe", cascade="all, delete")
     ingredientes = relationship("DB_Ingredient", back_populates="recipe", cascade="all, delete")
     tags = relationship("DB_Tag", secondary=recipe_tag_association_table, back_populates="recipes")
+    saved_by = relationship(
+        "DB_User", secondary=user_recipe_association_table, back_populates="saved_recipes"
+    )
 
 
 class DB_NutritionInfo(Base):
