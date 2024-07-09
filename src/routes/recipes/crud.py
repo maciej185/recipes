@@ -1,6 +1,6 @@
 """CRUD operations for the recipes package."""
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.db.models import (
@@ -181,15 +181,19 @@ def add_recipe_to_saved_list(db: Session, recipe_id: int, db_user: DB_User) -> D
     """Add recipe to user's saved recipe list and return a refreshed user object.
 
     Raises:
-        HTTPException: Raised when a recipe with the given
-                    ID was not found in the DB.
+        HTTPException: Raised when
+                    - a Recipe with the given ID was not found in the DB.
+                    - a Recipve with the given ID was already saved by the User.
     """
 
     recipe = db.query(DB_Recipe).filter(DB_Recipe.recipe_id == recipe_id).first()
     if recipe is None:
         raise HTTPException(
-            status_code=404, detail="Recipe with the given ID does not exist in the DB."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe with the given ID does not exist in the DB.",
         )
+    if recipe in db_user.saved_recipes:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Recipe already saved.")
     db_user.saved_recipes.append(recipe)
     db.commit()
     db.refresh(db_user)

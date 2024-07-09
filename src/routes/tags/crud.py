@@ -1,6 +1,6 @@
 """CRUD operations for the tags package."""
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.db.models import DB_Tag, DB_User
@@ -41,12 +41,20 @@ def add_tag_to_a_user(db: Session, tag_id: int, db_user: DB_User) -> DB_User:
     """Assign a  tag to a User and return the refreshed user object.
 
     Raises:
-        HTTPException: Raised when a Tag with the given ID does not exist.
+        HTTPException: Raised when
+                        - a Tag with the given ID does not exist.
+                        - the User is already subscribed to a given Tag.
     """
     tag = db.query(DB_Tag).filter(DB_Tag.tag_id == tag_id).first()
     if tag is None:
         raise HTTPException(
-            status_code=404, detail="Tag with the given ID was nout found in the DB."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tag with the given ID was nout found in the DB.",
+        )
+    if tag in db_user.tags:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The User is already subscribed to the given Tag.",
         )
     db_user.tags.append(tag)
     db.commit()
