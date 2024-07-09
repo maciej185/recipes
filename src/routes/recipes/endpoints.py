@@ -15,6 +15,7 @@ from .crud import (
     add_recipe_to_db,
     add_recipe_to_saved_list,
     delete_recipe_from_db,
+    delete_recipe_from_users_saved_list,
     get_recipe_from_db,
     list_measurment_units,
 )
@@ -83,7 +84,7 @@ def delete_recipe(
 
 
 @router.post(
-    "/save/{recipe_id}",
+    "/saved/save/{recipe_id}",
     dependencies=[Depends(RoleChecker([Roles.USER.value, Roles.ADMIN.value]))],
     status_code=201,
 )
@@ -94,3 +95,17 @@ def save_recipe(
 ) -> None:
     """Allow users to save recipes for later."""
     add_recipe_to_saved_list(db=db, recipe_id=recipe_id, db_user=current_user)
+
+
+@router.delete(
+    "/saved/delete/{recipe_id}",
+    dependencies=[Depends(RoleChecker([Roles.USER.value, Roles.ADMIN.value]))],
+    status_code=204,
+)
+def delete_recipe_from_saved(
+    recipe_id: Annotated[int, Path()],
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[DB_User, Depends(get_current_user)],
+) -> None:
+    """Delete a recipe from the user's saved recipe list."""
+    delete_recipe_from_users_saved_list(db=db, recipe_id=recipe_id, db_user=current_user)

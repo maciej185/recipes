@@ -194,3 +194,29 @@ def add_recipe_to_saved_list(db: Session, recipe_id: int, db_user: DB_User) -> D
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def delete_recipe_from_users_saved_list(db: Session, recipe_id: int, db_user: DB_User) -> DB_User:
+    """Delete a recipe from the user's list of saved recipes and return the refreshed user object.
+
+    Raises:
+        HTTPException: Raised when
+                        - a Recipe with the given ID does not exist.
+                        - a Recipe with the given ID is not present on
+                        the given User's list of subscribed tags.
+    """
+    recipe = db.query(DB_Recipe).filter(DB_Recipe.recipe_id == recipe_id).first()
+    if recipe is None:
+        raise HTTPException(
+            status_code=404, detail="Recipe with the given ID was nout found in the DB."
+        )
+    try:
+        db_user.saved_recipes.remove(recipe)
+    except ValueError:
+        raise HTTPException(
+            status_code=404,
+            detail="Recipe with the given ID was nout found in the User's list of saved recipes.",
+        )
+    db.commit()
+    db.refresh(db_user)
+    return db_user
