@@ -51,4 +51,30 @@ def add_tag_to_a_user(db: Session, tag_id: int, db_user: DB_User) -> DB_User:
     db_user.tags.append(tag)
     db.commit()
     db.refresh(db_user)
-    return DB_User
+    return db_user
+
+
+def delete_tag_from_users_list(db: Session, tag_id: int, db_user: DB_User) -> DB_User:
+    """Delete a tag from the user's list of subscribed tags and return the refreshed user object.
+
+    Raises:
+        HTTPException: Raised when
+                        - a Tag with the given ID does not exist.
+                        - a Tag with the given ID is not present on
+                        the given User's list of subscribed tags.
+    """
+    tag = db.query(DB_Tag).filter(DB_Tag.tag_id == tag_id).first()
+    if tag is None:
+        raise HTTPException(
+            status_code=404, detail="Tag with the given ID was nout found in the DB."
+        )
+    try:
+        db_user.tags.remove(tag)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Tag with the given ID was nout found in the User's list of subscribed tags.",
+        )
+    db.commit()
+    db.refresh(db_user)
+    return db_user
