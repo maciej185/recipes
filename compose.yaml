@@ -5,8 +5,13 @@ services:
       - my_sql_volume:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: secret 
+  backend:
+    image: recipe_app_backend
+    environment:
+      DB_HOST: mysql
     ports:
-      - "8001:3306"
+      - "8000:80"
+
 
 volumes:
   my_sql_volume:
