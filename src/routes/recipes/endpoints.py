@@ -11,7 +11,13 @@ from src.roles import Roles
 from src.routes.auth.utils import RoleChecker, get_current_user
 from src.tags import Tags
 
-from .crud import add_recipe_to_db, delete_recipe_from_db, get_recipe_from_db, list_measurment_units
+from .crud import (
+    add_recipe_to_db,
+    add_recipe_to_saved_list,
+    delete_recipe_from_db,
+    get_recipe_from_db,
+    list_measurment_units,
+)
 from .models import Recipe, RecipeAdd, Unit
 
 router = APIRouter(
@@ -74,3 +80,17 @@ def delete_recipe(
             detail="Current user it not the owner of the Recipe.",
         )
     delete_recipe_from_db(db=db, recipe_id=recipe_id)
+
+
+@router.post(
+    "/save/{recipe_id}",
+    dependencies=[Depends(RoleChecker([Roles.USER.value, Roles.ADMIN.value]))],
+    status_code=201,
+)
+def save_recipe(
+    recipe_id: Annotated[int, Path()],
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[DB_User, Depends(get_current_user)],
+) -> None:
+    """Allow users to save recipes for later."""
+    add_recipe_to_saved_list(db=db, recipe_id=recipe_id, db_user=current_user)

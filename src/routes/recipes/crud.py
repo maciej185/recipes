@@ -10,6 +10,7 @@ from src.db.models import (
     DB_Recipe,
     DB_Tag,
     DB_Unit,
+    DB_User,
 )
 
 from .models import RecipeAdd, UnitAdd
@@ -174,3 +175,22 @@ def list_instructions_from_db(db: Session) -> list[DB_Instruction]:
 def list_ingredients_from_db(db: Session) -> list[DB_Ingredient]:
     """List all available ingredients from the DB."""
     return db.query(DB_Ingredient).all()
+
+
+def add_recipe_to_saved_list(db: Session, recipe_id: int, db_user: DB_User) -> DB_User:
+    """Add recipe to user's saved recipe list and return a refreshed user object.
+
+    Raises:
+        HTTPException: Raised when a recipe with the given
+                    ID was not found in the DB.
+    """
+
+    recipe = db.query(DB_Recipe).filter(DB_Recipe.recipe_id == recipe_id).first()
+    if recipe is None:
+        raise HTTPException(
+            status_code=404, detail="Recipe with the given ID does not exist in the DB."
+        )
+    db_user.saved_recipes.append(recipe)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
