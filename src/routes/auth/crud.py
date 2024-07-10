@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.db.models import DB_User
@@ -72,3 +72,73 @@ def get_user_from_db(db: Session, user_id: int) -> DB_User:
             status_code=404, detail="User with the given ID does not exist in the DB."
         )
     return user
+
+
+def follow_user_in_db(db: Session, follower_db_user: DB_User, followed_user_id: int) -> bool:
+    """Follow user with the given ID.
+
+    Args:
+        follower_db_user: An instance of the DB_User model representing
+                        the User that aims to follow another User.
+        followed_user_id: ID of the User that will be followed by the previous User.
+
+    Raises:
+        HTTPException: Raised when
+                        - a user with the given `followed_user_id`
+                          was not found in the DB.
+                        - the `follower_db_user` already follows the
+                          user with the given `followed_user_id`
+
+    Returns:
+        Booelan information about whether or not the operation was successfull.
+    """
+    db_followed_user = db.query(DB_User).filter(DB_User.user_id == followed_user_id).first()
+    if db_followed_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given ID was not found in the DB.",
+        )
+    if db_followed_user in follower_db_user.followed_users:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The first user already follows the second one.",
+        )
+    follower_db_user.followed_users.append(db_followed_user)
+    db.commit()
+    db.refresh(follower_db_user)
+    return True
+
+
+def unfollow_user_in_db(db: Session, follower_db_user: DB_User, followed_user_id: int):
+    """Unfollow a user with the given ID.
+
+    Args:
+        follower_db_user: An instance of the DB_User model representing
+                        the User that aims to unfollow another User.
+        followed_user_id: ID of the User that will be unfollowed by the previous User.
+
+    Raises:
+        HTTPException: Raised when
+                        - a user with the given `followed_user_id`
+                          was not found in the DB.
+                        - the user with the given `followed_user_id`
+                          was not followed by the `follower_db_user`
+                          in the first place.
+
+    Returns:
+        Booelan information about whether or not the operation was successfull.
+    """
+    db_followed_user = db.query(DB_User).filter(DB_User.user_id == followed_user_id).first()
+    if db_followed_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given ID was not found in the DB.",
+        )
+    try:
+        follower_db_user.followed_users.remove(db_followed_user)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="The user was not followed."
+        )
+    db.commit()
+    return True

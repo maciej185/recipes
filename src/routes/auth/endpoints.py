@@ -1,6 +1,6 @@
 """Endpoints for the auth package."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -11,7 +11,13 @@ from src.dependencies import get_db
 from src.roles import Roles
 from src.tags import Tags
 
-from .crud import create_user, delete_user_from_db, update_user_in_db
+from .crud import (
+    create_user,
+    delete_user_from_db,
+    follow_user_in_db,
+    unfollow_user_in_db,
+    update_user_in_db,
+)
 from .models import Token, UserAdd, UserInResponse, UserUpdate
 from .utils import RoleChecker, authenticate_user, create_access_token, get_current_user
 
@@ -67,8 +73,42 @@ def update_user(
 ) -> DB_User:
     """Update given User with the provided information"""
     updated_user = update_user_in_db(db, current_user.user_id, user_data)
-    if update_user is None:
+    if updated_user is None:
         raise HTTPException(
             status_code=404, detail="User with the given ID does not exists in the database."
         )
     return updated_user
+
+
+@router.post(
+    "/follow/{followed_user_id}",
+    dependencies=[Depends(RoleChecker([Roles.USER.value, Roles.ADMIN.value]))],
+)
+def follow_user(
+    followed_user_id: Annotated[int, Path()],
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[DB_User, Depends(get_current_user)],
+) -> dict[Literal["success"], bool]:
+    """Endpoint for following other users."""
+    return {
+        "success": follow_user_in_db(
+            db=db, follower_db_user=current_user, followed_user_id=followed_user_id
+        )
+    }
+
+
+@router.post(
+    "/unfollow/{followed_user_id}",
+    dependencies=[Depends(RoleChecker([Roles.USER.value, Roles.ADMIN.value]))],
+)
+def unfollow_user(
+    followed_user_id: Annotated[int, Path()],
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[DB_User, Depends(get_current_user)],
+) -> dict[Literal["success"], bool]:
+    """Endpoint for unfollowing other users."""
+    return {
+        "success": unfollow_user_in_db(
+            db=db, follower_db_user=current_user, followed_user_id=followed_user_id
+        )
+    }

@@ -1,7 +1,6 @@
 services:
   mysql:
     image: mysql:latest
-    build: .
     volumes:
       - my_sql_volume:/var/lib/mysql
     environment:
@@ -9,6 +8,7 @@ services:
 
   backend:
     image: recipe_app_backend
+    build: .
     environment:
       DB_HOST: mysql
     ports:

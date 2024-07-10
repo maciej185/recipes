@@ -185,7 +185,6 @@ def add_recipe_to_saved_list(db: Session, recipe_id: int, db_user: DB_User) -> D
                     - a Recipe with the given ID was not found in the DB.
                     - a Recipve with the given ID was already saved by the User.
     """
-
     recipe = db.query(DB_Recipe).filter(DB_Recipe.recipe_id == recipe_id).first()
     if recipe is None:
         raise HTTPException(
