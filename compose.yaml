@@ -6,18 +6,19 @@ services:
       - my_sql_volume:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: secret 
-    develop:
-      watch:
-        - path: ./src
-          action: rebuild
 
-    
   backend:
     image: recipe_app_backend
     environment:
       DB_HOST: mysql
     ports:
       - "8000:80"
+    depends_on:
+     - mysql
+    develop:
+      watch:
+        - path: ./src
+          action: rebuild
 
 
 volumes:

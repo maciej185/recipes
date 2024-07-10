@@ -31,6 +31,13 @@ user_recipe_association_table = Table(
     Column("recipe_id", ForeignKey("recipes.recipe_id")),
 )
 
+user_user_association_table = Table(
+    "user_user_association_table",
+    Base.metadata,
+    Column("follower_id", ForeignKey("users.user_id")),
+    Column("followed_user_id", ForeignKey("users.user_id")),
+)
+
 
 class DB_User(Base):
     __tablename__ = "users"
@@ -50,6 +57,19 @@ class DB_User(Base):
     tags = relationship("DB_Tag", secondary=user_tag_association_table, back_populates="users")
     saved_recipes = relationship(
         "DB_Recipe", secondary=user_recipe_association_table, back_populates="saved_by"
+    )
+
+    followers = relationship(
+        "DB_User",
+        secondary=user_user_association_table,
+        back_populates="followed_users",
+        foreign_keys=[user_user_association_table.columns.get("follower_id")],
+    )
+    followed_users = relationship(
+        "DB_User",
+        secondary=user_user_association_table,
+        back_populates="followers",
+        foreign_keys=[user_user_association_table.columns.get("followed_user_id")],
     )
 
 
