@@ -15,6 +15,8 @@ from .crud import (
     create_user,
     delete_user_from_db,
     follow_user_in_db,
+    get_followed_users_from_db,
+    get_followers_from_db,
     unfollow_user_in_db,
     update_user_in_db,
 )
@@ -112,3 +114,25 @@ def unfollow_user(
             db=db, follower_db_user=current_user, followed_user_id=followed_user_id
         )
     }
+
+
+@router.get(
+    "/followers/{user_id}",
+    response_model=list[UserInResponse],
+)
+def get_followers(
+    user_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
+) -> list[DB_User]:
+    """Get all users following the user with the given ID."""
+    return get_followers_from_db(db=db, user_id=user_id)
+
+
+@router.get(
+    "/followed/{user_id}",
+    response_model=list[UserInResponse],
+)
+def get_followed_users(
+    user_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
+) -> list[DB_User]:
+    """Get all users that the user with the given ID follows."""
+    return get_followed_users_from_db(db=db, user_id=user_id)

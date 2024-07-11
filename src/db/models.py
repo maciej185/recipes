@@ -62,8 +62,8 @@ class DB_User(Base):
     followers = relationship(
         "DB_User",
         secondary=user_user_association_table,
-        primaryjoin=user_user_association_table.c.get("follower_id") == user_id,
-        secondaryjoin=user_user_association_table.c.get("followed_user_id") == user_id,
+        primaryjoin=user_user_association_table.c.get("followed_user_id") == user_id,
+        secondaryjoin=user_user_association_table.c.get("follower_id") == user_id,
     )
     followed_users = relationship(
         "DB_User",

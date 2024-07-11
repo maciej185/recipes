@@ -84,14 +84,21 @@ def follow_user_in_db(db: Session, follower_db_user: DB_User, followed_user_id: 
 
     Raises:
         HTTPException: Raised when
+                        - the `follower_db_user` has the same ID
+                          as `followed_user_id`
                         - a user with the given `followed_user_id`
                           was not found in the DB.
                         - the `follower_db_user` already follows the
                           user with the given `followed_user_id`
 
+
     Returns:
         Booelan information about whether or not the operation was successfull.
     """
+    if follower_db_user.user_id == followed_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Users can't follow themselves."
+        )
     db_followed_user = db.query(DB_User).filter(DB_User.user_id == followed_user_id).first()
     if db_followed_user is None:
         raise HTTPException(
@@ -119,15 +126,20 @@ def unfollow_user_in_db(db: Session, follower_db_user: DB_User, followed_user_id
 
     Raises:
         HTTPException: Raised when
+                        - the `follower_db_user` has the same ID
+                          as `followed_user_id`
                         - a user with the given `followed_user_id`
                           was not found in the DB.
                         - the user with the given `followed_user_id`
                           was not followed by the `follower_db_user`
                           in the first place.
-
     Returns:
         Booelan information about whether or not the operation was successfull.
     """
+    if follower_db_user.user_id == followed_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Users can't follow themselves."
+        )
     db_followed_user = db.query(DB_User).filter(DB_User.user_id == followed_user_id).first()
     if db_followed_user is None:
         raise HTTPException(
@@ -142,3 +154,35 @@ def unfollow_user_in_db(db: Session, follower_db_user: DB_User, followed_user_id
         )
     db.commit()
     return True
+
+
+def get_followers_from_db(db: Session, user_id: int) -> list[DB_User]:
+    """Get all users following the user with the given ID.
+
+    Raises:
+        HTTPException: Raised when the user with the given ID
+                        is not found in the DB.
+    """
+    db_user = db.query(DB_User).filter(DB_User.user_id == user_id).first()
+    if db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given ID was not found in the DB.",
+        )
+    return [user for user in db_user.followers]
+
+
+def get_followed_users_from_db(db: Session, user_id: int) -> list[DB_User]:
+    """Get all users that the user with the given ID follows.
+
+    Raises:
+        HTTPException: Raised when the user with the given ID
+                        is not found in the DB.
+    """
+    db_user = db.query(DB_User).filter(DB_User.user_id == user_id).first()
+    if db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given ID was not found in the DB.",
+        )
+    return [user for user in db_user.followed_users]
