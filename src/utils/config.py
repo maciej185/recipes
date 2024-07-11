@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, DirectoryPath, FilePath
 
 load_dotenv()
 
@@ -23,6 +23,8 @@ class ConfigView(BaseModel):
     app_name: str
     token_signing_key: str
     token_signing_algorithm: str
+    file_storage_path: DirectoryPath
+    default_profile_pic_path: FilePath
 
 
 class ConfigManager:

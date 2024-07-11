@@ -163,3 +163,6 @@ cython_debug/
 
 # configuration file
 config.json
+
+# files created when modifying diagrams in the docs
+*.bkp

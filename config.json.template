@@ -1,5 +1,7 @@
 {
     "app_name": "AppName",
     "token_signing_key": "Secret key for signing JWTs.",
-    "token_signing_algorithm": "Name of the algorithm for signing the token."
+    "token_signing_algorithm": "Name of the algorithm for signing the token.",
+    "file_storage_path": "path/to/a/root/folder/of/file/storage/system",
+    "default_profile_pic_path": "path/to/a/default/profile/picture"
 }
