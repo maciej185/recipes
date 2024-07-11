@@ -50,7 +50,7 @@ async def login(
 @router.get(
     "/me",
     response_model=UserInResponse,
-    dependencies=[Depends(RoleChecker(allowed_roles=[Roles.USER.value]))],
+    dependencies=[Depends(RoleChecker(allowed_roles=[Roles.USER.value, Roles.ADMIN.value]))],
 )
 async def read_users_me(
     current_user: Annotated[DB_User, Depends(get_current_user)],

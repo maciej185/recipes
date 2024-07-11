@@ -7,6 +7,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 from src.roles import Roles
+from src.utils import ConfigManager
+
+config = ConfigManager.get_config()
 
 Base = declarative_base()
 
@@ -52,6 +55,7 @@ class DB_User(Base):
     create_date = Column(Date, default=datetime.now())
     date_of_birth = Column(Date)
     role = Column(Integer, default=Roles.USER.value)
+    profile_pic_path = Column(String(100), default=config.default_profile_pic_path)
 
     recipes = relationship("DB_Recipe", back_populates="author")
     tags = relationship("DB_Tag", secondary=user_tag_association_table, back_populates="users")
@@ -94,6 +98,7 @@ class DB_Recipe(Base):
     saved_by = relationship(
         "DB_User", secondary=user_recipe_association_table, back_populates="saved_recipes"
     )
+    images = relationship("DB_RecipeImage", back_populates="recipe")
 
 
 class DB_NutritionInfo(Base):
@@ -155,3 +160,13 @@ class DB_Tag(Base):
         "DB_Recipe", secondary=recipe_tag_association_table, back_populates="tags"
     )
     users = relationship("DB_User", secondary=user_tag_association_table, back_populates="tags")
+
+
+class DB_RecipeImage(Base):
+    __tablename__ = "recipe_images"
+
+    recipe_image_id = Column(Integer, primary_key=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.recipe_id", ondelete="CASCADE"), nullable=False)
+    image_path = Column(String(100), nullable=False)
+
+    recipe = relationship("DB_Recipe", back_populates="images")
