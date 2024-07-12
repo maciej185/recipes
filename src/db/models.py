@@ -55,7 +55,7 @@ class DB_User(Base):
     create_date = Column(Date, default=datetime.now())
     date_of_birth = Column(Date)
     role = Column(Integer, default=Roles.USER.value)
-    profile_pic_path = Column(String(100), default=config.default_profile_pic_path)
+    profile_pic_path = Column(String(300), default=config.default_profile_pic_path)
 
     recipes = relationship("DB_Recipe", back_populates="author")
     tags = relationship("DB_Tag", secondary=user_tag_association_table, back_populates="users")
@@ -167,6 +167,6 @@ class DB_RecipeImage(Base):
 
     recipe_image_id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.recipe_id", ondelete="CASCADE"), nullable=False)
-    image_path = Column(String(100), nullable=False)
+    image_path = Column(String(300), nullable=False)
 
     recipe = relationship("DB_Recipe", back_populates="images")

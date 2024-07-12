@@ -31,3 +31,20 @@ class FileStorageManager:
         with open(profile_pic_file_path, "wb") as f:
             f.write(profile_pic_file.file.read())
         return profile_pic_file_path
+
+    @classmethod
+    def save_recipe_images(cls, recipe_id: int, uploaded_files: list[UploadFile]) -> list[Path]:
+        """Save images related to a given Recipe."""
+        recipe_images_path = Path(
+            cls.file_storage_root_path,
+            "recipes",
+            str(recipe_id),
+        )
+        image_paths = []
+        recipe_images_path.mkdir(exist_ok=True, parents=True)
+        for file in uploaded_files:
+            recipe_image_path = Path(recipe_images_path, file.filename)
+            with open(recipe_image_path, "wb") as f:
+                f.write(file.file.read())
+            image_paths.append(recipe_image_path)
+        return image_paths

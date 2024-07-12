@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Body, Depends, File, HTTPException, Path, UploadFile, status
 from sqlalchemy.orm import Session
 
 from src.db.models import DB_Recipe, DB_Unit, DB_User
@@ -10,6 +10,7 @@ from src.dependencies import get_db
 from src.roles import Roles
 from src.routes.auth.utils import RoleChecker, get_current_user
 from src.tags import Tags
+from src.utils import FileStorageManager
 
 from .crud import (
     add_recipe_to_db,
@@ -18,6 +19,7 @@ from .crud import (
     delete_recipe_from_users_saved_list,
     get_recipe_from_db,
     list_measurment_units,
+    save_recipe_images_in_db,
 )
 from .models import Recipe, RecipeAdd, Unit
 
@@ -109,3 +111,32 @@ def delete_recipe_from_saved(
 ) -> None:
     """Delete a recipe from the user's saved recipe list."""
     delete_recipe_from_users_saved_list(db=db, recipe_id=recipe_id, db_user=current_user)
+
+
+@router.post(
+    "/recipe/pictures/upload/{recipe_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(RoleChecker(allowed_roles=[Roles.USER.value, Roles.ADMIN.value]))],
+)
+def upload_recipe_images(
+    recipe_id: Annotated[int, Path()],
+    db: Annotated[Session, Depends(get_db)],
+    recipe_images_files: Annotated[list[UploadFile], File()],
+    current_user: Annotated[DB_User, Depends(get_current_user)],
+) -> None:
+    """Upload images for a given recipe
+
+    Raises:
+        HTTPException: Raised when the currently logged in user is not the author
+                        of the recipe.
+    """
+    db_recipe = get_recipe_from_db(db=db, recipe_id=recipe_id)
+    if current_user.user_id != db_recipe.author.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Currently authenticated user is not the author of the recipe.",
+        )
+    recipe_images_paths = FileStorageManager.save_recipe_images(
+        recipe_id=recipe_id, uploaded_files=recipe_images_files
+    )
+    save_recipe_images_in_db(db=db, recipe_id=recipe_id, recipe_images_paths=recipe_images_paths)

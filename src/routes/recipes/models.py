@@ -117,7 +117,7 @@ class RecipeAdd(RecipeBase):
     ingredients: list[IngredientAdd]
     instructions: list[InstructionAdd]
     nutrition_info: NutritionInfoAdd
-    tags: list[int]
+    tags: list[int] | None = None
 
 
 class Recipe(RecipeBase):

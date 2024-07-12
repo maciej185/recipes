@@ -1,5 +1,7 @@
 """CRUD operations for the recipes package."""
 
+from pathlib import Path
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -8,6 +10,7 @@ from src.db.models import (
     DB_Instruction,
     DB_NutritionInfo,
     DB_Recipe,
+    DB_RecipeImage,
     DB_Tag,
     DB_Unit,
     DB_User,
@@ -95,7 +98,9 @@ def add_recipe_to_db(db: Session, recipe_data: RecipeAdd) -> DB_Recipe:
     add_nutrition_info_to_db(
         db=db, nutrition_info_data=nutrition_info, recipe_id=db_recipe.recipe_id
     )
-    db_recipe = add_tags_to_a_recipe(db=db, tag_ids=tags, db_recipe=db_recipe)
+    db_recipe = (
+        add_tags_to_a_recipe(db=db, tag_ids=tags, db_recipe=db_recipe) if tags else db_recipe
+    )
 
     return db_recipe
 
@@ -223,3 +228,17 @@ def delete_recipe_from_users_saved_list(db: Session, recipe_id: int, db_user: DB
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def save_recipe_images_in_db(
+    db: Session, recipe_id: int, recipe_images_paths: list[Path]
+) -> list[DB_RecipeImage]:
+    """Save info about images for a given recipe in the DB."""
+    db_recipe_images = []
+    for recipe_images_path in recipe_images_paths:
+        db_recipe_image = DB_RecipeImage(recipe_id=recipe_id, image_path=recipe_images_path)
+        db.add(db_recipe_image)
+        db.commit()
+        db.refresh(db_recipe_image)
+        db_recipe_images.append(db_recipe_image)
+    return db_recipe_images
