@@ -1,8 +1,10 @@
 """Endpoints for the recipes package."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Path, UploadFile, status
+from fastapi.responses import FileResponse
+from pydantic import FilePath
 from sqlalchemy.orm import Session
 
 from src.db.models import DB_Recipe, DB_Unit, DB_User
@@ -18,6 +20,7 @@ from .crud import (
     delete_recipe_from_db,
     delete_recipe_from_users_saved_list,
     get_recipe_from_db,
+    get_recipe_image_from_db,
     list_measurment_units,
     save_recipe_images_in_db,
 )
@@ -140,3 +143,21 @@ def upload_recipe_images(
         recipe_id=recipe_id, uploaded_files=recipe_images_files
     )
     save_recipe_images_in_db(db=db, recipe_id=recipe_id, recipe_images_paths=recipe_images_paths)
+
+
+@router.get("recipe/pictures/get/{recipe_id}")
+def get_images_ids_for_recipe(
+    recipe_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
+) -> dict[Literal["recipe_images_ids"], list[int]]:
+    """Get images for a given recipe."""
+    db_recipe = get_recipe_from_db(db=db, recipe_id=recipe_id)
+    return {"recipe_images_ids": [image.recipe_image_id for image in db_recipe.images]}
+
+
+@router.get("recipe/pictures/picture/get/{recipe_image_id}", response_class=FileResponse)
+def get_recipe_image(
+    recipe_image_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
+) -> FilePath:
+    """Get an image with the given ID."""
+    db_recipe_image = get_recipe_image_from_db(db=db, recipe_image_id=recipe_image_id)
+    return db_recipe_image.image_path

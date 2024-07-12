@@ -242,3 +242,20 @@ def save_recipe_images_in_db(
         db.refresh(db_recipe_image)
         db_recipe_images.append(db_recipe_image)
     return db_recipe_images
+
+
+def get_recipe_image_from_db(db: Session, recipe_image_id: int) -> DB_RecipeImage:
+    """Get recipe image with the given ID.
+
+    Raises:
+        HTTPException: Raised when a recipe image with the given ID was not found in the DB.
+    """
+    db_recipe_image = (
+        db.query(DB_RecipeImage).filter(DB_RecipeImage.recipe_image_id == recipe_image_id).first()
+    )
+    if db_recipe_image is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image with the given ID was not found in the DB.",
+        )
+    return db_recipe_image
