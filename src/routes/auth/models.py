@@ -43,6 +43,7 @@ class UserInResponseAdmin(UserInResponse):
 
     hashed_password: str
     create_date: date
+    profile_pic_path: str
 
 
 class UserUpdate(UserBase):

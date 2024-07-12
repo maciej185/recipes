@@ -2,7 +2,7 @@
 
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Body, Depends, File, HTTPException, Path, UploadFile, status
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import FilePath
@@ -12,6 +12,7 @@ from src.db.models import DB_User
 from src.dependencies import get_db
 from src.roles import Roles
 from src.tags import Tags
+from src.utils import FileStorageManager
 
 from .crud import (
     create_user,
@@ -22,6 +23,7 @@ from .crud import (
     get_user_from_db,
     unfollow_user_in_db,
     update_user_in_db,
+    update_users_profile_pic_path,
 )
 from .models import Token, UserAdd, UserInResponse, UserUpdate
 from .utils import RoleChecker, authenticate_user, create_access_token, get_current_user
@@ -63,7 +65,7 @@ async def read_users_me(
 
 
 @router.get("/me/profile_picture", response_class=FileResponse)
-async def get_current_users_profile_pic(
+def get_current_users_profile_pic(
     current_user: Annotated[DB_User, Depends(get_current_user)]
 ) -> FilePath:
     """Return profile picture of the currently logged in user."""
@@ -76,6 +78,23 @@ def register(
 ) -> DB_User:
     """Register the given User."""
     return create_user(db, user_data)
+
+
+@router.put(
+    "/register/profile_picture/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(RoleChecker(allowed_roles=[Roles.USER.value, Roles.ADMIN.value]))],
+)
+async def upload_picture(
+    user_id: Annotated[int, Path()],
+    profile_pic_file: Annotated[UploadFile, File()],
+    db: Annotated[Session, Depends(get_db)],
+) -> None:
+    """Upload a profile picture for a given profile."""
+    saved_profile_pic_path = FileStorageManager.save_profile_picture(
+        user_id=user_id, profile_pic_file=profile_pic_file
+    )
+    update_users_profile_pic_path(db=db, user_id=user_id, profile_pic_path=saved_profile_pic_path)
 
 
 @router.put("/update", response_model=UserInResponse)

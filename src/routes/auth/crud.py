@@ -1,5 +1,6 @@
 """CRUD operations for the auth package."""
 
+from pathlib import Path
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -186,3 +187,22 @@ def get_followed_users_from_db(db: Session, user_id: int) -> list[DB_User]:
             detail="User with the given ID was not found in the DB.",
         )
     return [user for user in db_user.followed_users]
+
+
+def update_users_profile_pic_path(db: Session, user_id: int, profile_pic_path: Path) -> DB_User:
+    """Update given user's profile pic path and return refreshed user object.
+
+    Raises:
+        HTTPException: Raised when the user with the given ID
+                        is not found in the DB.
+    """
+    db_user = db.query(DB_User).filter(DB_User.user_id == user_id).first()
+    if db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with the given ID was not found in the DB.",
+        )
+    db_user.profile_pic_path = str(profile_pic_path)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
