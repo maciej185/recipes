@@ -3,7 +3,9 @@
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
+from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import FilePath
 from sqlalchemy.orm import Session
 
 from src.db.models import DB_User
@@ -17,6 +19,7 @@ from .crud import (
     follow_user_in_db,
     get_followed_users_from_db,
     get_followers_from_db,
+    get_user_from_db,
     unfollow_user_in_db,
     update_user_in_db,
 )
@@ -57,6 +60,14 @@ async def read_users_me(
 ) -> DB_User:
     """Return an object representing the currently logged in User."""
     return current_user
+
+
+@router.get("/me/profile_picture", response_class=FileResponse)
+async def get_current_users_profile_pic(
+    current_user: Annotated[DB_User, Depends(get_current_user)]
+) -> FilePath:
+    """Return profile picture of the currently logged in user."""
+    return current_user.profile_pic_path
 
 
 @router.post("/register", response_model=UserInResponse, status_code=201)
@@ -136,3 +147,12 @@ def get_followed_users(
 ) -> list[DB_User]:
     """Get all users that the user with the given ID follows."""
     return get_followed_users_from_db(db=db, user_id=user_id)
+
+
+@router.get("/profile_picture/{user_id}", response_class=FileResponse)
+def get_given_users_profile_pic(
+    user_id: Annotated[int, Path()], db: Annotated[Session, Depends(get_db)]
+) -> FilePath:
+    """Return profile picture of the user with the given ID."""
+    user = get_user_from_db(db=db, user_id=user_id)
+    return user.profile_pic_path
