@@ -76,6 +76,7 @@ class DB_User(Base):
         secondaryjoin=user_user_association_table.c.get("followed_user_id") == user_id,
         overlaps="followers",
     )
+    ratings = relationship("DB_Rating", back_populates="author")
 
 
 class DB_Recipe(Base):
@@ -99,6 +100,7 @@ class DB_Recipe(Base):
         "DB_User", secondary=user_recipe_association_table, back_populates="saved_recipes"
     )
     images = relationship("DB_RecipeImage", back_populates="recipe")
+    ratings = relationship("DB_Rating", back_populates="recipe")
 
 
 class DB_NutritionInfo(Base):
@@ -170,3 +172,14 @@ class DB_RecipeImage(Base):
     image_path = Column(String(300), nullable=False)
 
     recipe = relationship("DB_Recipe", back_populates="images")
+
+
+class DB_Rating(Base):
+    __tablename__ = "ratings"
+
+    rating_id = Column(Integer, primary_key=True)
+    author_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    recipe_id = Column(Integer, ForeignKey("recipes.recipe_id", ondelete="CASCADE"), nullable=False)
+
+    recipe = relationship("DB_Recipe", back_populates="ratings")
+    author = relationship("DB_User", back_populates="ratings")
