@@ -8,3 +8,4 @@ class Tags(Enum):
     admin = "Admin"
     recipes = "Recipes"
     tags = "Tags"
+    ratings = "Ratings"

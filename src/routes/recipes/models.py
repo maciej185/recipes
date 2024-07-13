@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel
 
+from src.routes.ratings.models import Rating
 from src.routes.tags.models import Tag
 
 
@@ -129,6 +130,7 @@ class Recipe(RecipeBase):
     instructions: list[Instruction] = []
     nutrition_info: list[NutritionInfo]
     tags: list[Tag]
+    ratings: list[Rating]
 
     class Config:
         from_attributes = True

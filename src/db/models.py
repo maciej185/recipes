@@ -180,6 +180,7 @@ class DB_Rating(Base):
     rating_id = Column(Integer, primary_key=True)
     author_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     recipe_id = Column(Integer, ForeignKey("recipes.recipe_id", ondelete="CASCADE"), nullable=False)
+    rating = Column(Integer, nullable=False)
 
     recipe = relationship("DB_Recipe", back_populates="ratings")
     author = relationship("DB_User", back_populates="ratings")

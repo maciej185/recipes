@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from src.routes import auth, recipes, tags
+from src.routes import auth, ratings, recipes, tags
 from src.utils import ConfigManager
 
 config = ConfigManager.get_config()
@@ -18,3 +18,4 @@ app.include_router(recipes.router)
 app.include_router(recipes.admin_router)
 app.include_router(tags.router)
 app.include_router(tags.admin_router)
+app.include_router(ratings.router)
