@@ -50,3 +50,8 @@ def delete_rating_from_db(db: Session, rating: DB_Rating) -> None:
     """Delete given rating from DB."""
     db.delete(rating)
     db.commit()
+
+
+def list_ratings_from_db(db: Session) -> list[DB_Rating]:
+    """List all avilable ratings from DB."""
+    return db.query(DB_Rating).all()
