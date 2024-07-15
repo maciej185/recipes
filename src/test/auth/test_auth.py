@@ -1,7 +1,6 @@
 """Tests for the endpoints in the auth package/route."""
 
 from datetime import datetime
-from unittest.mock import patch
 
 from src.test.client import client
 
@@ -70,12 +69,14 @@ class TestAuth:
 
         assert res.status_code == 422
 
-    def test_login_correct_credientials_token_received(self, register_user) -> None:
+    def test_login_correct_credientials_token_received(self) -> None:
+        client.register_user(username="username", password="password")
         res = client.post("/auth/token", data={"username": "username", "password": "password"})
 
         assert res.status_code == 200
 
-    def test_login_incorrect_credentials_401_returned(self, register_user) -> None:
+    def test_login_incorrect_credentials_401_returned(self) -> None:
+        client.register_user(username="username", password="password")
         res = client.post(
             "/auth/token", data={"username": "incorrect_username", "password": "password"}
         )
@@ -83,29 +84,31 @@ class TestAuth:
         assert res.status_code == 401
         assert res.json()["detail"] == "Incorrect username or password"
 
-    def test_me_user_logged_in_info_returned(self, register_user) -> None:
+    def test_me_user_logged_in_info_returned(self) -> None:
+        client.register_user(username="username", password="password")
         client.login(username="username", password="password")
         res = client.get("/auth/me")
 
         assert res.status_code == 200
 
         res_data = res.json()
-        assert res_data["first_name"] == "first_name"
-        assert res_data["last_name"] == "last_name"
+        assert res_data["first_name"] == "FirstName"
+        assert res_data["last_name"] == "LastName"
         assert res_data["username"] == "username"
-        assert res_data["email"] == "email@email.com"
-        assert res_data["description"] == "Descritpion"
+        assert res_data["email"] == "username@email.com"
+        assert res_data["description"] == "Description"
         assert res_data["user_id"] == 2
 
         client.logout()
 
-    def test_me_user_not_logged_in_exception_raised(self, register_user) -> None:
+    def test_me_user_not_logged_in_exception_raised(self) -> None:
         res = client.get("/auth/me")
 
         print(res.json())
         assert res.status_code == 401
 
-    def test_update_user_logged_in_correct_data_user_updated(self, register_user) -> None:
+    def test_update_user_logged_in_correct_data_user_updated(self) -> None:
+        client.register_user(username="username", password="password")
         client.login(username="username", password="password")
         res = client.put("/auth/")
         client.logout()

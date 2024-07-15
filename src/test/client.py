@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi.testclient import TestClient
 
 from src.main import app
@@ -15,9 +17,25 @@ class BaseTestClient(TestClient):
     """TestClient with additional utilities for the app."""
 
     AUTHENTICATION_ENDPOINT_URL = "/auth/token"
+    REGISTRATION_ENDPOINT_URL = "/auth/register"
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+    def register_user(self, username: str, password: str) -> None:
+        """Register a user with given credentials."""
+        client.post(
+            "/auth/register",
+            json={
+                "first_name": "FirstName",
+                "last_name": "LastName",
+                "email": "username@email.com",
+                "username": username,
+                "date_of_birth": datetime.now().date().strftime("%Y-%m-%d"),
+                "description": "Description",
+                "plain_text_password": password,
+            },
+        )
 
     def login(self, username: str, password: str) -> None:
         """Add authentication headers to every request."""
