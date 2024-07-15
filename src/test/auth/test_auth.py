@@ -15,10 +15,10 @@ class TestAuth:
                 "first_name": "FirstName",
                 "last_name": "LastName",
                 "email": "username@email.com",
-                "username": "Username",
+                "username": "username",
                 "date_of_birth": datetime.now().date().strftime("%Y-%m-%d"),
                 "description": "Description",
-                "plain_text_password": "Password",
+                "plain_text_password": "password",
             },
         )
 
@@ -31,10 +31,10 @@ class TestAuth:
                 "first_name": "FirstName",
                 "last_name": "LastName",
                 "email": "username@email.com",
-                "username": "Username",
+                "username": "username",
                 "date_of_birth": datetime.now().date().strftime("%Y-%m-%d"),
                 "description": "Description",
-                "plain_text_password": "Password",
+                "plain_text_password": "password",
             },
         )
 
@@ -44,10 +44,10 @@ class TestAuth:
                 "first_name": "FirstName",
                 "last_name": "LastName",
                 "email": "username@email.com",
-                "username": "Username",
+                "username": "username",
                 "date_of_birth": datetime.now().date().strftime("%Y-%m-%d"),
                 "description": "Description",
-                "plain_text_password": "Password",
+                "plain_text_password": "password",
             },
         )
 
@@ -60,10 +60,10 @@ class TestAuth:
             json={
                 "first_name": "FirstName",
                 "email": "username@email.com",
-                "username": "Username",
+                "username": "username",
                 "date_of_birth": datetime.now().date().strftime("%Y-%m-%d"),
                 "description": "Description",
-                "plain_text_password": "Password",
+                "plain_text_password": "password",
             },
         )
 
@@ -97,7 +97,7 @@ class TestAuth:
         assert res_data["username"] == "username"
         assert res_data["email"] == "username@email.com"
         assert res_data["description"] == "Description"
-        assert res_data["user_id"] == 2
+        assert res_data["user_id"] == 1
 
         client.logout()
 
@@ -108,13 +108,37 @@ class TestAuth:
         assert res.status_code == 401
 
     def test_update_user_logged_in_correct_data_user_updated(self) -> None:
-        client.register_user(username="username", password="password")
-        client.login(username="username", password="password")
-        res = client.put("/auth/")
+        client.register_user(username="Username", password="Password")
+        client.login(username="Username", password="Password")
+        res = client.put(
+            "/auth/update",
+            json={
+                "first_name": "FirstNameUpdated",
+            },
+        )
+        assert res.status_code == 200
+        assert res.json()["first_name"] == "FirstNameUpdated"
+
         client.logout()
 
     def test_update_user_logged_in_incorrect_data_exception_raised(self) -> None:
-        pass
+        client.register_user(username="Username", password="Password")
+        client.login(username="Username", password="Password")
+        res = client.put(
+            "/auth/update",
+            json={
+                "first_name": 3,
+            },
+        )
+        assert res.status_code == 422
+
+        client.logout()
 
     def test_update_user_not_logged_in_exception_raised(self) -> None:
-        pass
+        res = client.put(
+            "/auth/update",
+            json={
+                "first_name": "FirstNameUpdated",
+            },
+        )
+        assert res.status_code == 401
