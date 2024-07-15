@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.db.models import DB_User
@@ -14,7 +15,12 @@ from .utils import get_password_hash
 
 
 def create_user(db: Session, user_data: UserAdd, role: int = Roles.USER.value) -> DB_User:
-    """Save User and return it's DB representation."""
+    """Save User and return it's DB representation.
+
+    Raises:
+        HTTPException: Raised when a user with the given username already exists in the
+                        DB.
+    """
     hashed_password = get_password_hash(user_data.plain_text_password)
     db_user = DB_User(
         username=user_data.username,
@@ -27,7 +33,10 @@ def create_user(db: Session, user_data: UserAdd, role: int = Roles.USER.value) -
         role=role,
     )
     db.add(db_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username taken.")
     db.refresh(db_user)
     return db_user
 

@@ -3,8 +3,7 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, Date, Float, ForeignKey, Integer, String, Table, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 
 from src.roles import Roles
 from src.utils import ConfigManager
@@ -55,7 +54,7 @@ class DB_User(Base):
     create_date = Column(Date, default=datetime.now())
     date_of_birth = Column(Date)
     role = Column(Integer, default=Roles.USER.value)
-    profile_pic_path = Column(String(300), default=config.default_profile_pic_path)
+    profile_pic_path = Column(String(300), default=str(config.default_profile_pic_path))
 
     recipes = relationship("DB_Recipe", back_populates="author")
     tags = relationship("DB_Tag", secondary=user_tag_association_table, back_populates="users")
