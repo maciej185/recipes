@@ -108,8 +108,8 @@ class TestAuth:
         assert res.status_code == 401
 
     def test_update_user_logged_in_correct_data_user_updated(self) -> None:
-        client.register_user(username="Username", password="Password")
-        client.login(username="Username", password="Password")
+        client.register_user(username="username", password="password")
+        client.login(username="username", password="password")
         res = client.put(
             "/auth/update",
             json={
@@ -122,8 +122,8 @@ class TestAuth:
         client.logout()
 
     def test_update_user_logged_in_incorrect_data_exception_raised(self) -> None:
-        client.register_user(username="Username", password="Password")
-        client.login(username="Username", password="Password")
+        client.register_user(username="username", password="password")
+        client.login(username="username", password="password")
         res = client.put(
             "/auth/update",
             json={
@@ -142,3 +142,217 @@ class TestAuth:
             },
         )
         assert res.status_code == 401
+
+    def test_user_logged_in_followed_user_exists_follow_successful(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        follow_res = client.post(
+            "/auth/follow/3",
+        )
+
+        assert follow_res.status_code == 200
+
+        client.logout()
+
+    def test_user_logged_in_attempting_to_follow_themselves_exception_raised(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        follow_res = client.post(
+            "/auth/follow/2",
+        )
+
+        assert follow_res.status_code == 403
+        assert follow_res.json()["detail"] == "Users can't follow themselves."
+
+        client.logout()
+
+    def test_user_logged_in_another_user_already_followed_exception_raised(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        client.post(
+            "/auth/follow/3",
+        )
+        follow_res = client.post(
+            "/auth/follow/3",
+        )
+
+        assert follow_res.status_code == 403
+        assert follow_res.json()["detail"] == "The first user already follows the second one."
+
+        client.logout()
+
+    def test_user_logged_in_followed_user_does_not_exist_exception_raised(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        follow_res = client.post(
+            "/auth/follow/100",
+        )
+
+        assert follow_res.status_code == 404
+        assert follow_res.json()["detail"] == "User with the given ID was not found in the DB."
+
+        client.logout()
+
+    def test_user_not_logged_in_exception_raised(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+        follow_res = client.post(
+            "/auth/follow/3",
+        )
+
+        assert follow_res.status_code == 401
+        assert follow_res.json()["detail"] == "Not authenticated"
+
+    def test_user_logged_in_unfollowing_user_who_is_followed_unfollow_successful(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        client.post(
+            "/auth/follow/3",
+        )
+
+        unfollow_res = client.post(
+            "/auth/unfollow/3",
+        )
+
+        assert unfollow_res.status_code == 200
+
+        client.logout()
+
+    def test_user_logged_in_unfollowing_user_who_is_not_followed_exception_raised(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        unfollow_res = client.post(
+            "/auth/unfollow/3",
+        )
+
+        assert unfollow_res.status_code == 403
+        assert unfollow_res.json()["detail"] == "The user was not followed."
+
+        client.logout()
+
+    def test_user_logged_in_fetching_followers_fetch_successfull(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        client.post(
+            "/auth/follow/3",
+        )
+
+        followers_res = client.get(
+            "/auth/followers/3",
+        )
+
+        res_data = followers_res.json()
+        assert followers_res.status_code == 200
+        assert len(res_data) == 1
+        assert res_data[0]["username"] == "user1"
+        assert res_data[0]["user_id"] == 2
+
+        client.logout()
+
+    def test_user_logged_in_fetching_followers_user_does_not_exists_exception_raised(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+
+        followers_res = client.get(
+            "/auth/followers/100",
+        )
+
+        assert followers_res.status_code == 404
+        assert followers_res.json()["detail"] == "User with the given ID was not found in the DB."
+
+        client.logout()
+
+    def test_user_not_logged_in_fetching_followers_fetch_successful(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        client.post(
+            "/auth/follow/3",
+        )
+        client.logout()
+
+        followers_res = client.get(
+            "/auth/followers/3",
+        )
+
+        res_data = followers_res.json()
+        assert followers_res.status_code == 200
+        assert len(res_data) == 1
+        assert res_data[0]["username"] == "user1"
+        assert res_data[0]["user_id"] == 2
+
+    def test_user_logged_in_fetching_followed_users_fetch_successful(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        client.post(
+            "/auth/follow/3",
+        )
+
+        followers_res = client.get(
+            "/auth/followed/2",
+        )
+
+        res_data = followers_res.json()
+        assert followers_res.status_code == 200
+        assert len(res_data) == 1
+        assert res_data[0]["username"] == "user2"
+        assert res_data[0]["user_id"] == 3
+
+        client.logout()
+
+    def test_user_logged_in_fetching_followed_users_user_does_not_exists_exception_raised(
+        self,
+    ) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+
+        followers_res = client.get(
+            "/auth/followed/100",
+        )
+
+        assert followers_res.status_code == 404
+        assert followers_res.json()["detail"] == "User with the given ID was not found in the DB."
+
+        client.logout()
+
+    def test_user_not_logged_in_fetching_followed_users_fetch_successful(self) -> None:
+        client.register_user(username="user1", password="password")
+        client.register_user(username="user2", password="password")
+
+        client.login(username="user1", password="password")
+        client.post(
+            "/auth/follow/3",
+        )
+
+        followers_res = client.get(
+            "/auth/followed/2",
+        )
+
+        res_data = followers_res.json()
+        assert followers_res.status_code == 200
+        assert len(res_data) == 1
+        assert res_data[0]["username"] == "user2"
+        assert res_data[0]["user_id"] == 3
+
+        client.logout()
