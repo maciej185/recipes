@@ -2,7 +2,7 @@ services:
   mysql:
     image: mysql:latest
     volumes:
-      - my_sql_volume:/var/lib/mysql
+      - my_sql_volume1:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: secret 
 
@@ -11,15 +11,26 @@ services:
     build: .
     environment:
       DB_HOST: mysql
+      CONFIG_PATH: config.json
+      DB_ENGINE: mysql+pymysql
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+      DB_PORT: 3306
+      DB_NAME: mysql
     ports:
       - "8000:80"
+    command: bash -c "alembic upgrade head && fastapi run src/main.py --port 80"
     depends_on:
      - mysql
+    restart: on-failure:10
     develop:
       watch:
         - path: ./src
           action: rebuild
+    volumes:
+      - recipes_backend_file_storage_volume:/recipes/storage
 
 
 volumes:
-  my_sql_volume:
+  my_sql_volume1:
+  recipes_backend_file_storage_volume:
